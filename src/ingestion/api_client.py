@@ -1,6 +1,6 @@
 """
 Polymarket API Client.
-This nodule provides an asynchronous HTTP client to concurrently fetch
+This module provides an asynchronous HTTP client to concurrently fetch
 and parse market information from the Polymarket API.
 """
 import aiohttp
@@ -8,6 +8,8 @@ import asyncio
 import json
 
 class ApiClient:
+    OFFSET = 50000
+    LIMIT = 100
     def __init__(self, url):
         """
         Initialize the api client and prepare the storage for market information.
@@ -24,7 +26,7 @@ class ApiClient:
         connector = aiohttp.TCPConnector(ssl=False)
         async with aiohttp.ClientSession(connector=connector) as session:
             tasks = []
-            for offset in range(0, 50000, 100):  # Pre-generate offsets up to 50,000 to cover all possible pages
+            for offset in range(0, self.OFFSET, self.LIMIT):  # Pre-generate offsets up to 50,000 to cover all possible pages
                 tasks.append(self.fetch_single_market_info(session, offset)) # add fetch task to the batch
             await asyncio.gather(*tasks) 
 
