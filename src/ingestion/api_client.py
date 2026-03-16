@@ -6,6 +6,8 @@ and parse market information from the Polymarket API.
 import aiohttp
 import asyncio
 import json
+import certifi
+import ssl
 
 class ApiClient:
     OFFSET = 50000
@@ -23,10 +25,11 @@ class ApiClient:
         Concurrently fetch market info from the api across multiple pages.
         Uses asynchronous requests to avoid blocking and retrieve all data chunk.
         """
-        connector = aiohttp.TCPConnector(ssl=False)
+        ssl_context = ssl.create_default_context(cafile=certifi.where()) # SSL context using certifi CA certificates
+        connector = aiohttp.TCPConnector(ssl=ssl_context)
         async with aiohttp.ClientSession(connector=connector) as session:
             tasks = []
-            for offset in range(0, self.OFFSET, self.LIMIT):  # Pre-generate offsets up to 50,000 to cover all possible pages
+            for offset in range(0, self.OFFSET, self.LIMIT):  # pre-generate offsets up to 50,000 to cover all possible pages
                 tasks.append(self.fetch_single_market_info(session, offset)) # add fetch task to the batch
             await asyncio.gather(*tasks) 
 
