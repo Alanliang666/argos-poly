@@ -80,3 +80,43 @@ Test Case A: Inject an orderbook where Sum(Asks) = 0.95 -> Assert that the tradi
 Test Case B: Inject an orderbook where Sum(Asks) = 1.05 -> Assert that the trading signal returns False.
 
 Integration Testing (Soak Test): Run the WebSocket client connected to the live Polymarket production server for 24 hours continuously to verify that the Keep-Alive mechanism works and the system can gracefully handle unexpected disconnections (reconnect logic).
+
+## 7. Workflow
+
+### 1. Ingestion
+ - Fetch data from the API and store the raw market information.
+ - Convert the market information into a dictionary format.
+
+### 2. WebSocket Connection
+ - Pass the dictionary to the WebSocket client.
+ - Connect to Polymarket using WebSockets and subscribe to real-time ask and bid prices.
+
+### 3. Caching & Monitoring
+ - Cache the incoming ask and bid data from the WebSocket flow and continuously keep the data updated.
+
+### 4. Strategy Engine
+ - Retrieve the latest ask prices for the mutually exclusive outcomes and calculate their sum.
+ - If the sum is less than 1, verify that adding estimated gas fees and slippage still keeps the total cost below 1. If it does, an arbitrage opportunity is confirmed—send the signal to the execution layer.
+
+### 5. Paper Trading (MVP Version)
+ - Log the execution details: Market ID, triggered prices, and expected profit.
+
+```mermaid
+flowchart TD
+    A[Ingestion] -->|Raw Market Data| B[Convert to Dictionary]
+    B -->|Dictionary Format| C[WebSocket Client]
+    C -->|Connect| D[Polymarket WebSocket]
+    D -->|Real-time Prices| E[Caching & Monitoring]
+    E -->|Ask/Bid Updates| F[Strategy Engine]
+    F -->|Retrieve Ask Prices| G[Calculate Sum of Outcomes]
+    G -->|Sum < 1?| H{Check Condition}
+    H -->|No| I[No Arbitrage]
+    H -->|Yes| J[Verify Gas Fees & Slippage]
+    J -->|Total < 1?| K{Final Check}
+    K -->|No| I
+    K -->|Yes| L[Arbitrage Opportunity Confirmed]
+    L -->|Send Signal| M[Execution Layer]
+    M -->|Log Details| N[Paper Trading]
+    N -->|Market ID, Prices, Profit| O[Execution Log]
+    I -->|Continue Monitoring| E
+```
