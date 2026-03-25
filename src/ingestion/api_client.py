@@ -41,7 +41,7 @@ class ApiClient:
         @param offset: int, the starting point (offset) for the data chunk
         @param limit: int, the maximum number of items to retrieve per request
         """
-        params={"offset": offset, "limit":limit}
+        params={"offset": offset, "limit":limit, "active":"true", "closed":"false"}
         async with session.get(self.url, params=params) as response:
             if response.status == 200:
                 data = await response.json()
@@ -60,22 +60,22 @@ class ApiClient:
         for event in data:
             if "markets" in event:
                 for market in event["markets"]:
-                
-                    question = market.get("question")
-                    market_id = market.get("id")
+                    if market.get("closed") is False:
+                        question = market.get("question")
+                        market_id = market.get("id")
 
-                    # parse JSON string into Python list
-                    try:
-                        outcome = json.loads(market.get("outcomes", "[]"))
-                        clob_token_id = json.loads(market.get("clobTokenIds", "[]"))
+                        # parse JSON string into Python list
+                        try:
+                            outcome = json.loads(market.get("outcomes", "[]"))
+                            clob_token_id = json.loads(market.get("clobTokenIds", "[]"))
 
-                        if len(clob_token_id) == len(outcome):  # ensure arrays have matching lengths before pairing
-                            for i in range(len(outcome)):  # pair each token ID with its corresponding outcome
-                                self.market_info[clob_token_id[i]] = [market_id, question, outcome[i]]
-                    
-                    except json.JSONDecodeError:
-                        print(f"Skipping Market {market.get('id')} due to JSON decode error.")
-                        continue
-                    
-                    except Exception as e:
-                        pass
+                            if len(clob_token_id) == len(outcome):  # ensure arrays have matching lengths before pairing
+                                for i in range(len(outcome)):  # pair each token ID with its corresponding outcome
+                                    self.market_info[clob_token_id[i]] = [market_id, question, outcome[i]]
+                        
+                        except json.JSONDecodeError:
+                            print(f"Skipping Market {market.get('id')} due to JSON decode error.")
+                            continue
+                        
+                        except Exception as e:
+                            pass
