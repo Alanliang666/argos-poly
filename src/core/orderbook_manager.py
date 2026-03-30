@@ -1,19 +1,24 @@
 """
-TO DO: 
-- [Bridge] Use `self.queue.put_nowait(market_id)` to dispatch non-blocking update signals.
-- [Execute Layer] Create an independent async consumer loop (`await queue.get()`) to evaluate strategy rules purely against the freshest `self.book_order` state, bypassing stale ticks, and execute trades instantly.
+Handle the bid/ask data from the WebSocket
 """
-
 import json
 import traceback
 
 class OrderBookManager:
     def __init__(self, queue, market_info):
+        """
+        Initializes the order book state.
+        @param queue: asyncio.Queue, receives messages from the WebSocket.
+        @param market_info: dict, mapping of asset IDs to market details.
+        """
         self.order_book = {}
         self.queue = queue
         self.market_info = market_info
 
     async def start(self):
+        """
+        Starts the consumer loop to process incoming WebSocket messages and update the order book.
+        """
         while True:
             message = await self.queue.get()
             try:
@@ -31,6 +36,10 @@ class OrderBookManager:
                 continue
 
     def _handle_message(self, message_dict):
+        """
+        Parses the incoming message and updates the local order book state.
+        @param message_dict: dict, the newest data payload from the WebSocket.
+        """
         if message_dict.get("event_type") == "price_change":
             for change in message_dict.get("price_changes", []):
                 asset_id = change.get("asset_id")
@@ -44,4 +53,3 @@ class OrderBookManager:
                         "best_bid":change.get("best_bid"),
                         "best_ask":change.get("best_ask")
                     }
-                    return market_id

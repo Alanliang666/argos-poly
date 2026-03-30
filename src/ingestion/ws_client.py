@@ -1,6 +1,6 @@
 """
+WebSocket client for connecting to Polymarket and streaming real-time market data.
 """
-
 import asyncio
 import websockets
 import json
@@ -9,12 +9,19 @@ import ssl
 
 class WsClient:
     def __init__(self, market_info, url):
-        # get the market info into this function
+        """
+        Initializes the WebSocket client.
+        @param market_info: dict, mapping of asset IDs to market details.
+        @param url: str, the Polymarket WebSocket endpoint URL.
+        """
         self.market_info = market_info
         self.url = url
         self.queue = asyncio.Queue()
 
     async def ws_connect(self):
+        """
+        Maintains a persistent WebSocket connection and routes incoming messages to the queue.
+        """
         ssl_context = ssl.create_default_context(cafile=certifi.where())
         while True:
             try:
@@ -25,11 +32,15 @@ class WsClient:
                         await self.queue.put(message)
 
             except Exception as e:
-                # if return error then we stop 5 sencond for next round
+                # Wait before attempting to reconnect
                 await asyncio.sleep(5)
 
     def _build_subscription_payload(self):
-        send_json = {"assets_ids":list(self.market_info),
+        """
+        Builds the payload structure required to subscribe to the market data feed.
+        @return: str, a JSON-formatted string representing the subscription payload.
+        """
+        send_json = {"assets_ids":list(self.market_info), # Market info from the API data
                     "type":'market',
                     "initial_dump":True,
                     "level":2,
