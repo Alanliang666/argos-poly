@@ -31,6 +31,9 @@ class WsClient:
                         message = await ws.recv()
                         await self.queue.put(message)
 
+            except asyncio.CancelledError:
+                raise
+    
             except Exception as e:
                 # Wait before attempting to reconnect
                 await asyncio.sleep(5)
