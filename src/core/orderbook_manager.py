@@ -23,7 +23,11 @@ class OrderBookManager:
             message = await self.queue.get()
             try:
                 message_dict = json.loads(message)
-                self._handle_message(message_dict)
+                if isinstance(message_dict, list):  # Polymarket may batch multiple events into a single JSON array
+                    for msg in message_dict:
+                        self._handle_message(msg)
+                else:
+                    self._handle_message(message_dict)
             
             except json.JSONDecodeError:
                 print(f"Invalid JSON received, ignoring: {message}")
