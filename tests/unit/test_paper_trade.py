@@ -61,5 +61,5 @@ def test_log_format(caplog):
     assert len(caplog.records) == 1
     assert caplog.records[0].levelname == "INFO"
     assert "Market: M_999" in caplog.text
-    assert "Cost: $ 0.80" in caplog.text
-    assert "Expected Profit: $ 0.20" in caplog.text
+    assert "Cost: $0.80" in caplog.text
+    assert "Expected Profit: $0.20" in caplog.text
