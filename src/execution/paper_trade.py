@@ -3,6 +3,7 @@ Paper Trade Logging for the strategy layer.
 
 This module provides trade history logging and converts execution signals into a formatted local store.
 """
+from src.config import LOG_LEVEL
 import logging
 
 class PaperTrade:
@@ -12,7 +13,7 @@ class PaperTrade:
         """
         self.trade_history = []
         self.logger = logging.getLogger('PaperTrade')
-        self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(LOG_LEVEL)
 
         if not self.logger.handlers:
             ch = logging.StreamHandler()
