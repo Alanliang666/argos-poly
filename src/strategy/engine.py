@@ -1,7 +1,7 @@
 """
-Strategy handle logic for the caluclate the arbitrage formula
+Strategy handle logic for the calculate the arbitrage formula
 
-This module provides arbitrage formula to calculate the choice price isn't have any chance for porfit.
+This module provides arbitrage formula to calculate the choice price isn't have any chance for profit.
 """
 class StrategyEngine:
     def __init__(self):
@@ -26,7 +26,7 @@ class StrategyEngine:
                     if not ask_price:
                         is_market_valid = False
                         break
-                    total_cost += outcome_info['best_ask']
+                    total_cost += ask_price
             
             if not is_market_valid:
                 continue
