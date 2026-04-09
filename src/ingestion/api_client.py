@@ -3,6 +3,7 @@ Polymarket API Client.
 This module provides an asynchronous HTTP client to concurrently fetch
 and parse market information from the Polymarket API.
 """
+from src.config import API_MAX_OFFSET, API_PAGINATION_LIMIT
 import aiohttp
 import asyncio
 import json
@@ -10,8 +11,9 @@ import certifi
 import ssl
 
 class ApiClient:
-    OFFSET = 50000
-    LIMIT = 100
+    OFFSET = API_MAX_OFFSET
+    LIMIT = API_PAGINATION_LIMIT
+    
     def __init__(self, url):
         """
         Initialize the api client and prepare the storage for market information.
@@ -19,6 +21,7 @@ class ApiClient:
         """
         self.url = url
         self.market_info = {} # mapping: clob_token_id -> [market_id, question, outcome]
+        
     
     async def get_market_info(self):
         """

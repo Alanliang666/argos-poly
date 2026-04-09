@@ -3,6 +3,7 @@ Strategy handle logic for the calculate the arbitrage formula
 
 This module provides arbitrage formula to calculate the choice price isn't have any chance for profit.
 """
+from src.config import DEFAULT_SLIPPAGE, TAKER_FEE
 class StrategyEngine:
     def __init__(self):
         """
@@ -48,8 +49,8 @@ class CostEstimator:
         Initialize the expected taker fee and slippage for Polymarket. 
         Using default hardcoded values for the MVP stage.
         """
-        self.default_slippage = 0.005
-        self.taker_fee = 0.002
+        self.default_slippage = DEFAULT_SLIPPAGE
+        self.taker_fee = TAKER_FEE
 
     def estimated_cost(self, total_value):
         """

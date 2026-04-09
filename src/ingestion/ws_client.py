@@ -1,6 +1,7 @@
 """
 WebSocket client for connecting to Polymarket and streaming real-time market data.
 """
+from src.config import WS_PING_INTERVAL, WS_PING_TIMEOUT
 import asyncio
 import websockets
 import json
@@ -25,7 +26,7 @@ class WsClient:
         ssl_context = ssl.create_default_context(cafile=certifi.where())
         while True:
             try:
-                async with websockets.connect(self.url, ping_interval=10, ping_timeout=10, ssl=ssl_context, max_size=None) as ws:
+                async with websockets.connect(self.url, ping_interval=WS_PING_INTERVAL, ping_timeout=WS_PING_TIMEOUT, ssl=ssl_context, max_size=None) as ws:
                     await ws.send(self._build_subscription_payload())
                     while True:
                         message = await ws.recv()
