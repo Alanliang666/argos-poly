@@ -11,6 +11,8 @@ import certifi
 import ssl
 
 class ApiClient:
+    OFFSET = API_MAX_OFFSET
+    LIMIT = API_PAGINATION_LIMIT
     
     def __init__(self, url):
         """
@@ -19,8 +21,7 @@ class ApiClient:
         """
         self.url = url
         self.market_info = {} # mapping: clob_token_id -> [market_id, question, outcome]
-        self.OFFSET = API_MAX_OFFSET
-        self.LIMIT = API_PAGINATION_LIMIT
+        
     
     async def get_market_info(self):
         """
