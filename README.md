@@ -15,6 +15,78 @@
 </div>
 
 ---
+ 
+## 🧠 Why This Project Exists
+ 
+Polymarket arbitrage opportunities are time-sensitive — they can vanish within seconds. A traditional synchronous REST polling approach introduces blocking wait times between each API call, which means by the time a response is received and processed, the window may already be closed.
+ 
+This project is built around a core design principle: **eliminate unnecessary waiting at every layer of the pipeline.**
+ 
+---
+ 
+## ⚙️ Key Engineering Decisions
+ 
+### Why `asyncio` + WebSockets instead of synchronous REST polling?
+ 
+Subscribing to a CLOB via WebSocket requires maintaining a persistent long-lived connection that pushes updates in real time. If we used synchronous REST polling instead:
+ 
+- Each request blocks until a response is received
+- While waiting, new market movements go undetected
+- Latency accumulates across multiple markets being monitored simultaneously
+ 
+By using `asyncio`, the system can concurrently listen to multiple WebSocket streams without blocking — making it suitable for latency-sensitive arbitrage scanning.
+ 
+### Active Market Filtering
+ 
+During development, a critical bug was discovered: the WebSocket subscription was consistently returning empty data streams for a subset of markets.
+ 
+**Debug process:**
+1. Identified that certain market IDs retrieved from the REST API were producing silent WebSocket connections with no data returned
+2. Used Postman to manually test the WebSocket subscription payload for affected market IDs
+3. Discovered the root cause: the REST API returns **all** markets including `closed` ones, which have no active order book and thus return no stream data
+4. **Fix:** Added an upstream filter at the ingestion layer to only retain markets with `active` status before passing IDs to the WebSocket subscriber
+ 
+This filter now runs on every REST API fetch cycle, ensuring only live markets enter the pipeline.
+ 
+---
+ 
+## 🏗️ System Architecture
+ 
+```
+┌─────────────────────────────────────────────────────────┐
+│                   Data Ingestion Layer                  │
+│                                                         │
+│   Polymarket REST API                                   │
+│         │                                               │
+│         ▼                                               │
+│   [ Active Market Filter ]  ← filters out closed mkts  │
+│         │                                               │
+│         ▼                                               │
+│   WebSocket Subscriber (asyncio)                        │
+│         │  real-time CLOB stream per market             │
+└─────────┼───────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────┐
+│                   Strategy Layer                        │
+│                                                         │
+│   Arbitrage Engine                                      │
+│   - Calculates implied probability sum per market       │
+│   - Flags opportunities where sum < 100%               │
+│   - Modular OOP design for extensibility               │
+└─────────┼───────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────┐
+│                   Execution Layer                       │
+│                                                         │
+│   Paper Trade Logger                                    │
+│   - Records detected opportunities with timestamp      │
+│   - Outputs structured logs for analysis               │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
 
 ## 🤔 What Does This Actually Do?
 
